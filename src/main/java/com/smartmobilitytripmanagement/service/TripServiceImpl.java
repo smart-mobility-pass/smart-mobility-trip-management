@@ -1,22 +1,29 @@
 package com.smartmobilitytripmanagement.service;
 
 import com.smartmobilitytripmanagement.beans.Trip;
+import com.smartmobilitytripmanagement.dto.TripEvent;
 import com.smartmobilitytripmanagement.dto.UserDTO;
 import com.smartmobilitytripmanagement.error.ResourceNotFoundException;
 import com.smartmobilitytripmanagement.proxy.UserProxy;
+import com.smartmobilitytripmanagement.publisher.TripPublisher;
 import com.smartmobilitytripmanagement.repository.TripRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
 @Service
 public class TripServiceImpl implements TripService {
+
     @Autowired
     private TripRepository tripRepository;
 
     @Autowired
     private UserProxy userProxy;
+
+    @Autowired
+    private TripPublisher tripPublisher;
 
     // 1. Démarrer un trajet
     @Override
@@ -42,7 +49,24 @@ public class TripServiceImpl implements TripService {
         trip.setCalculatedPrice(price);
         trip.setStatus("COMPLETED");
 
-        return tripRepository.save(trip);
+        Trip savedTrip = tripRepository.save(trip);
+
+        // Envoyer l'événement à RabbitMQ
+        TripEvent event = TripEvent.builder()
+                .tripId(savedTrip.getId())
+                .userId(savedTrip.getUserId())
+                .transportType(savedTrip.getTransportType())
+                .startTime(savedTrip.getStartTime())
+                .startLocation(savedTrip.getStartLocation())
+                .endTime(savedTrip.getEndTime())
+                .endLocation(savedTrip.getEndLocation())
+                .price(savedTrip.getCalculatedPrice())
+                .status(savedTrip.getStatus())
+                .build();
+
+        tripPublisher.publishTripCompleted(event);
+
+        return savedTrip;
     }
 
     // 3. Annuler un trajet
