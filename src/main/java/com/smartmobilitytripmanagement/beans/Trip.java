@@ -34,8 +34,7 @@ public class Trip {
 
     private String status; // STARTED, COMPLETED, CANCELLED
 
-    @Column(name = "calculated_price")
-    private Double calculatedPrice;
+
 
     public Trip() {}
     public Trip(Long userId, String transportType, String startLocation) {

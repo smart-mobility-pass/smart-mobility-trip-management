@@ -26,14 +26,13 @@ public class TripController {
         return ResponseEntity.ok(newTrip);
     }
 
-    // 2. Terminer un trajet (met à jour la fin et le prix)
+    // 2. Terminer un trajet (met à jour la fin)
     @PutMapping("/complete/{id}")
     public ResponseEntity<Trip> completeTrip(
             @PathVariable Long id,
-            @RequestParam String endLocation,
-            @RequestParam Double price) {
+            @RequestParam String endLocation) {
 
-        Trip completedTrip = tripService.completeTrip(id, endLocation, price);
+        Trip completedTrip = tripService.completeTrip(id, endLocation);
         return ResponseEntity.ok(completedTrip);
     }
 
@@ -43,6 +42,7 @@ public class TripController {
         List<Trip> history = tripService.getUserHistory(userId);
         return ResponseEntity.ok(history);
     }
+
     @PostMapping("/save")
     public ResponseEntity<Trip> save(@RequestBody Trip trip) {
         return ResponseEntity.ok(tripService.saveTrip(trip));

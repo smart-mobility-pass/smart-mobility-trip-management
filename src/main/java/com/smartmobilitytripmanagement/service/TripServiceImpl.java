@@ -1,8 +1,7 @@
 package com.smartmobilitytripmanagement.service;
 
 import com.smartmobilitytripmanagement.beans.Trip;
-import com.smartmobilitytripmanagement.dto.TripEvent;
-import com.smartmobilitytripmanagement.dto.UserDTO;
+import com.smartmobilitytripmanagement.dto.TripCompletedEvent;
 import com.smartmobilitytripmanagement.error.ResourceNotFoundException;
 import com.smartmobilitytripmanagement.proxy.UserProxy;
 import com.smartmobilitytripmanagement.publisher.TripPublisher;
@@ -28,7 +27,7 @@ public class TripServiceImpl implements TripService {
     // 1. Démarrer un trajet
     @Override
     public Trip startTrip(Long userId, String transportType, String startLocation) {
-        UserDTO user = userProxy.getUserById(userId);
+        userProxy.getUserById(userId);
 
         Trip trip = new Trip(userId, transportType, startLocation);
         return tripRepository.save(trip);
@@ -36,7 +35,7 @@ public class TripServiceImpl implements TripService {
 
     // 2. Terminer un trajet
     @Override
-    public Trip completeTrip(Long tripId, String endLocation, Double price) {
+    public Trip completeTrip(Long tripId, String endLocation) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trajet introuvable avec l'ID: " + tripId));
 
@@ -46,13 +45,12 @@ public class TripServiceImpl implements TripService {
 
         trip.setEndLocation(endLocation);
         trip.setEndTime(LocalDateTime.now());
-        trip.setCalculatedPrice(price);
         trip.setStatus("COMPLETED");
 
         Trip savedTrip = tripRepository.save(trip);
 
         // Envoyer l'événement à RabbitMQ
-        TripEvent event = TripEvent.builder()
+        TripCompletedEvent event = TripCompletedEvent.builder()
                 .tripId(savedTrip.getId())
                 .userId(savedTrip.getUserId())
                 .transportType(savedTrip.getTransportType())
@@ -60,7 +58,6 @@ public class TripServiceImpl implements TripService {
                 .startLocation(savedTrip.getStartLocation())
                 .endTime(savedTrip.getEndTime())
                 .endLocation(savedTrip.getEndLocation())
-                .price(savedTrip.getCalculatedPrice())
                 .status(savedTrip.getStatus())
                 .build();
 
