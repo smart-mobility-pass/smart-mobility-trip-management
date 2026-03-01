@@ -1,13 +1,12 @@
 package com.smartmobilitytripmanagement.proxy;
 
-
 import com.smartmobilitytripmanagement.dto.UserDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(name = "user-mobility-service")
+@FeignClient(name = "user-mobility-pass-service")
 public interface UserProxy {
-    @GetMapping("/users/{id}")
-    UserDTO getUserById(@PathVariable("id") Long id);
+    @GetMapping("/api/users/{id}")
+    UserDTO getUserById(@PathVariable("id") String id);
 }
