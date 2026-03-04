@@ -21,4 +21,5 @@ public class TripCompletedEvent {
     private LocalDateTime endTime;
     private String endLocation;
     private String status;
+    private boolean mismatch;
 }

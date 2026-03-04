@@ -35,7 +35,7 @@ public class TripServiceImpl implements TripService {
 
     // 2. Terminer un trajet
     @Override
-    public Trip completeTrip(Long tripId, String endLocation) {
+    public Trip completeTrip(Long tripId, String endLocation, Long transportLineId) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trajet introuvable avec l'ID: " + tripId));
 
@@ -43,9 +43,17 @@ public class TripServiceImpl implements TripService {
             throw new IllegalStateException("Impossible de terminer : le trajet est déjà " + trip.getStatus());
         }
 
+        // Vérification de la ligne de transport
+        boolean mismatch = false;
+        if (transportLineId == null || !transportLineId.equals(trip.getTransportLineId())) {
+            mismatch = true;
+            trip.setStatus("COMPLETED_MISMATCH");
+        } else {
+            trip.setStatus("COMPLETED");
+        }
+
         trip.setEndLocation(endLocation);
         trip.setEndTime(LocalDateTime.now());
-        trip.setStatus("COMPLETED");
 
         Trip savedTrip = tripRepository.save(trip);
 
@@ -60,6 +68,7 @@ public class TripServiceImpl implements TripService {
                 .endTime(savedTrip.getEndTime())
                 .endLocation(savedTrip.getEndLocation())
                 .status(savedTrip.getStatus())
+                .mismatch(mismatch)
                 .build();
 
         tripPublisher.publishTripCompleted(event);
