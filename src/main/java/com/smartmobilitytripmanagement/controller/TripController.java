@@ -45,6 +45,18 @@ public class TripController {
         return ResponseEntity.ok(history);
     }
 
+    // 4. Récupérer le trajet actif (si existant)
+    @GetMapping("/active/{userId}")
+    public ResponseEntity<Trip> getActive(@PathVariable String userId) {
+        return ResponseEntity.ok(tripService.getActiveTrip(userId));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Trip> getById(@PathVariable Long id) {
+        Trip trip = tripService.getTripById(id);
+        return trip != null ? ResponseEntity.ok(trip) : ResponseEntity.notFound().build();
+    }
+
     @PostMapping("/save")
     public ResponseEntity<Trip> save(@RequestBody Trip trip) {
         return ResponseEntity.ok(tripService.saveTrip(trip));

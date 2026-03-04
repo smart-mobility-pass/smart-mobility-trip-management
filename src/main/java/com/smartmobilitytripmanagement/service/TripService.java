@@ -16,4 +16,8 @@ public interface TripService {
     List<Trip> findAll();
 
     List<Trip> getUserHistory(String userId);
+
+    Trip getActiveTrip(String userId);
+
+    Trip getTripById(Long id);
 }

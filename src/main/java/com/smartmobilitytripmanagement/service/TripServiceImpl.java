@@ -104,7 +104,17 @@ public class TripServiceImpl implements TripService {
     }
 
     @Override
+    public Trip getActiveTrip(String userId) {
+        return tripRepository.findFirstByUserIdAndStatus(userId, "STARTED").orElse(null);
+    }
+
+    @Override
     public List<Trip> findAll() {
         return tripRepository.findAll();
+    }
+
+    @Override
+    public Trip getTripById(Long id) {
+        return tripRepository.findById(id).orElse(null);
     }
 }
